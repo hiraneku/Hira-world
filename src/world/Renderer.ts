@@ -1,79 +1,81 @@
 import { TileType } from './types';
 import { World } from './World';
 
-const TILE_COLORS: Record<TileType, [number, number, number][]> = {
+const SUB = 4; // 4x4 sub-pixels per tile for high-detail pixel art
+
+const TILE_BASE: Record<TileType, [number, number, number][]> = {
   [TileType.DEEP_WATER]: [
-    [22, 62, 122],
-    [20, 58, 115],
-    [25, 67, 130],
-    [18, 54, 108],
+    [18, 52, 108],
+    [16, 48, 100],
+    [22, 58, 118],
+    [14, 44, 94],
   ],
   [TileType.SHALLOW_WATER]: [
-    [45, 128, 196],
-    [50, 135, 204],
-    [42, 120, 188],
-    [54, 140, 210],
+    [42, 128, 198],
+    [48, 136, 206],
+    [38, 120, 188],
+    [52, 142, 212],
   ],
   [TileType.SAND]: [
-    [235, 212, 148],
+    [236, 212, 146],
     [228, 204, 138],
-    [240, 218, 156],
-    [222, 198, 132],
+    [242, 220, 158],
+    [220, 196, 130],
   ],
   [TileType.SOIL]: [
-    [136, 98, 62],
-    [128, 92, 58],
-    [142, 104, 68],
-    [122, 86, 54],
+    [134, 94, 58],
+    [126, 88, 54],
+    [142, 102, 64],
+    [118, 82, 50],
   ],
   [TileType.GRASS]: [
-    [82, 168, 72],
-    [76, 158, 66],
-    [90, 176, 78],
-    [72, 150, 62],
+    [78, 166, 68],
+    [72, 156, 62],
+    [88, 176, 76],
+    [66, 148, 58],
   ],
   [TileType.FOREST]: [
-    [60, 132, 54],
-    [55, 124, 50],
-    [66, 140, 60],
-    [52, 118, 48],
+    [56, 128, 50],
+    [50, 120, 46],
+    [62, 136, 56],
+    [46, 112, 42],
   ],
   [TileType.HILL]: [
-    [118, 124, 132],
-    [110, 116, 124],
+    [116, 122, 130],
+    [108, 114, 122],
     [126, 132, 140],
-    [104, 110, 118],
+    [100, 106, 114],
   ],
   [TileType.MOUNTAIN]: [
-    [84, 88, 96],
-    [78, 82, 90],
+    [82, 86, 94],
+    [74, 78, 86],
     [92, 96, 104],
-    [72, 76, 84],
+    [68, 72, 80],
   ],
   [TileType.SNOW]: [
     [236, 244, 252],
     [228, 238, 248],
-    [242, 248, 255],
-    [220, 232, 244],
+    [244, 250, 255],
+    [218, 230, 242],
   ],
   [TileType.LAVA]: [
-    [238, 82, 22],
-    [248, 118, 28],
-    [220, 60, 18],
-    [252, 152, 36],
+    [225, 58, 16],
+    [245, 96, 20],
+    [200, 40, 12],
+    [252, 140, 28],
   ],
   [TileType.ASH]: [
-    [68, 66, 70],
     [62, 60, 64],
-    [76, 74, 78],
     [56, 54, 58],
+    [70, 68, 72],
+    [50, 48, 52],
   ],
 };
 
 export interface Camera {
-  x: number; // world center x in tile units
-  y: number; // world center y in tile units
-  zoom: number; // pixels per tile
+  x: number;
+  y: number;
+  zoom: number;
 }
 
 export class Renderer {
@@ -83,27 +85,137 @@ export class Renderer {
 
   constructor(world: World) {
     this.terrainCanvas = document.createElement('canvas');
-    this.terrainCanvas.width = world.width;
-    this.terrainCanvas.height = world.height;
+    this.terrainCanvas.width = world.width * SUB;
+    this.terrainCanvas.height = world.height * SUB;
     const ctx = this.terrainCanvas.getContext('2d');
     if (!ctx) throw new Error('Could not create offscreen 2D context');
     this.terrainCtx = ctx;
-    this.terrainImageData = ctx.createImageData(world.width, world.height);
+    this.terrainImageData = ctx.createImageData(
+      world.width * SUB,
+      world.height * SUB
+    );
+  }
+
+  private setSubPixel(
+    data: Uint8ClampedArray,
+    imgW: number,
+    px: number,
+    py: number,
+    r: number,
+    g: number,
+    b: number
+  ): void {
+    const p = (py * imgW + px) * 4;
+    data[p] = Math.max(0, Math.min(255, r));
+    data[p + 1] = Math.max(0, Math.min(255, g));
+    data[p + 2] = Math.max(0, Math.min(255, b));
+    data[p + 3] = 255;
   }
 
   private updateTerrainTexture(world: World): void {
     const data = this.terrainImageData.data;
-    const len = world.width * world.height;
+    const w = world.width;
+    const h = world.height;
+    const imgW = w * SUB;
 
-    for (let i = 0; i < len; i++) {
-      const tile = world.tiles[i] as TileType;
-      const variant = world.tileVariant[i];
-      const rgb = TILE_COLORS[tile][variant];
-      const p = i * 4;
-      data[p] = rgb[0];
-      data[p + 1] = rgb[1];
-      data[p + 2] = rgb[2];
-      data[p + 3] = 255;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const idx = y * w + x;
+        const tile = world.tiles[idx] as TileType;
+        const variant = world.tileVariant[idx];
+        const base = TILE_BASE[tile][variant];
+
+        // Neighbor checks for edge shading / shorelines
+        const up = y > 0 ? world.tiles[(y - 1) * w + x] : tile;
+        const down = y < h - 1 ? world.tiles[(y + 1) * w + x] : tile;
+        const left = x > 0 ? world.tiles[y * w + (x - 1)] : tile;
+        const right = x < w - 1 ? world.tiles[y * w + (x + 1)] : tile;
+
+        for (let sy = 0; sy < SUB; sy++) {
+          for (let sx = 0; sx < SUB; sx++) {
+            let r = base[0];
+            let g = base[1];
+            let b = base[2];
+
+            // Deterministic micro-hash per subpixel
+            const hash = ((x * 73856093) ^ (y * 19349663) ^ (sx * 83492791) ^ (sy * 2971215073)) & 15;
+
+            // Micro-texture details
+            if (tile === TileType.GRASS || tile === TileType.FOREST) {
+              if (hash === 1 || hash === 9) {
+                r += 16;
+                g += 22;
+                b += 10;
+              } else if (hash === 5) {
+                r -= 14;
+                g -= 18;
+                b -= 10;
+              }
+            } else if (tile === TileType.SAND) {
+              if (hash === 2) {
+                r -= 16;
+                g -= 14;
+                b -= 12;
+              } else if (hash === 11) {
+                r += 10;
+                g += 10;
+                b += 8;
+              }
+            } else if (tile === TileType.SOIL) {
+              if (hash === 3 || hash === 12) {
+                r -= 18;
+                g -= 14;
+                b -= 10;
+              }
+            } else if (tile === TileType.HILL || tile === TileType.MOUNTAIN) {
+              if (hash < 3) {
+                r += 14;
+                g += 14;
+                b += 16;
+              } else if (hash === 14) {
+                r -= 18;
+                g -= 18;
+                b -= 16;
+              }
+            } else if (tile === TileType.ASH && hash === 4) {
+              // Glowing ember speck in ash
+              r = 180;
+              g = 65;
+              b = 20;
+            }
+
+            // Shoreline foam on shallow water next to land
+            if (tile === TileType.SHALLOW_WATER) {
+              const nearLand =
+                (sy === 0 && up > TileType.SHALLOW_WATER) ||
+                (sy === SUB - 1 && down > TileType.SHALLOW_WATER) ||
+                (sx === 0 && left > TileType.SHALLOW_WATER) ||
+                (sx === SUB - 1 && right > TileType.SHALLOW_WATER);
+              if (nearLand && hash % 2 === 0) {
+                r = 195;
+                g = 232;
+                b = 250;
+              }
+            }
+
+            // Cliff / elevation shadow on lower/right edges
+            if (tile === TileType.HILL || tile === TileType.MOUNTAIN || tile === TileType.SNOW) {
+              if (sy === SUB - 1 && down < tile) {
+                r -= 28;
+                g -= 28;
+                b -= 24;
+              }
+              if (sy === 0 && up < tile) {
+                r += 16;
+                g += 16;
+                b += 18;
+              }
+            }
+
+            this.setSubPixel(data, imgW, x * SUB + sx, y * SUB + sy, r, g, b);
+          }
+        }
+      }
     }
 
     this.terrainCtx.putImageData(this.terrainImageData, 0, 0);
@@ -125,7 +237,7 @@ export class Renderer {
     }
 
     ctx.imageSmoothingEnabled = false;
-    ctx.fillStyle = '#0b1320';
+    ctx.fillStyle = '#080e1a';
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
     const tileSize = camera.zoom;
@@ -135,7 +247,7 @@ export class Renderer {
     ctx.save();
     ctx.translate(offsetX, offsetY);
 
-    // 1. Draw Terrain
+    // 1. Draw high-detail 4x4 subpixel terrain
     ctx.drawImage(
       this.terrainCanvas,
       0,
@@ -144,7 +256,6 @@ export class Renderer {
       world.height * tileSize
     );
 
-    // Visible tile bounds for culling
     const startX = Math.max(0, Math.floor(-offsetX / tileSize) - 1);
     const endX = Math.min(
       world.width - 1,
@@ -156,7 +267,7 @@ export class Renderer {
       Math.ceil((canvasHeight - offsetY) / tileSize) + 1
     );
 
-    // 2. Animated Water Shimmer & Trees & Fire
+    // 2. Animated Water, Lava, Trees, and Fire
     for (let y = startY; y <= endY; y++) {
       for (let x = startX; x <= endX; x++) {
         const idx = y * world.width + x;
@@ -164,28 +275,80 @@ export class Renderer {
         const px = x * tileSize;
         const py = y * tileSize;
 
+        // Animated water waves
         if (tile === TileType.SHALLOW_WATER || tile === TileType.DEEP_WATER) {
-          const wave = Math.sin(timeSec * 2.5 + x * 0.6 + y * 0.4);
-          if (wave > 0.85) {
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.16)';
-            ctx.fillRect(px + tileSize * 0.2, py + tileSize * 0.35, tileSize * 0.5, Math.max(1, tileSize * 0.15));
+          const wave = Math.sin(timeSec * 2.8 + x * 0.55 + y * 0.35);
+          if (wave > 0.78) {
+            const shift = ((timeSec * 0.6 + y * 0.2) % 1) * tileSize * 0.25;
+            ctx.fillStyle =
+              tile === TileType.SHALLOW_WATER
+                ? 'rgba(224, 246, 255, 0.28)'
+                : 'rgba(147, 197, 253, 0.16)';
+            ctx.fillRect(
+              px + shift,
+              py + tileSize * 0.35,
+              tileSize * 0.55,
+              Math.max(1, tileSize * 0.14)
+            );
           }
         }
 
-        const tree = world.trees[idx];
-        if (tree !== 0 && tileSize >= 3) {
-          this.drawPixelTree(ctx, px, py, tileSize, tree, timeSec + x * 0.3);
+        // Animated glowing lava crust & magma pulse
+        if (tile === TileType.LAVA) {
+          const pulse = Math.sin(timeSec * 3.5 + x * 0.9 + y * 0.7) * 0.5 + 0.5;
+          if (pulse > 0.65) {
+            ctx.fillStyle = '#fde047';
+            ctx.fillRect(
+              px + tileSize * 0.25,
+              py + tileSize * 0.25,
+              tileSize * 0.4,
+              tileSize * 0.4
+            );
+          } else if (pulse < 0.25) {
+            ctx.fillStyle = '#450a0a';
+            ctx.fillRect(
+              px + tileSize * 0.15,
+              py + tileSize * 0.5,
+              tileSize * 0.35,
+              tileSize * 0.25
+            );
+          }
         }
 
+        // Detailed Pixel Trees
+        const tree = world.trees[idx];
+        if (tree !== 0 && tileSize >= 3) {
+          this.drawPixelTree(ctx, px, py, tileSize, tree, timeSec + x * 0.35);
+        }
+
+        // Layered Pixel Fire
         const fire = world.fire[idx];
         if (fire > 0) {
-          const flicker = Math.sin(timeSec * 18 + x * 3 + y * 7) * 0.5 + 0.5;
-          ctx.fillStyle = flicker > 0.5 ? '#f97316' : '#facc15';
+          const f1 = Math.sin(timeSec * 16 + x * 3.1 + y * 5.7) * 0.5 + 0.5;
+          const f2 = Math.cos(timeSec * 22 + x * 4.3 + y * 2.1) * 0.5 + 0.5;
+          // Outer red-orange flame
+          ctx.fillStyle = '#ea580c';
           ctx.fillRect(
-            px + tileSize * 0.15,
-            py + tileSize * (0.15 + flicker * 0.15),
-            tileSize * 0.7,
-            tileSize * 0.7
+            px + tileSize * 0.12,
+            py + tileSize * (0.12 + f1 * 0.14),
+            tileSize * 0.76,
+            tileSize * 0.76
+          );
+          // Middle bright orange
+          ctx.fillStyle = '#f97316';
+          ctx.fillRect(
+            px + tileSize * 0.22,
+            py + tileSize * (0.2 + f2 * 0.14),
+            tileSize * 0.56,
+            tileSize * 0.62
+          );
+          // Inner yellow core
+          ctx.fillStyle = '#fef08a';
+          ctx.fillRect(
+            px + tileSize * 0.34,
+            py + tileSize * (0.38 + f1 * 0.1),
+            tileSize * 0.32,
+            tileSize * 0.38
           );
         }
       }
@@ -224,29 +387,42 @@ export class Renderer {
     type: number,
     phase: number
   ): void {
-    const sway = Math.sin(phase * 1.8) * s * 0.04;
+    const sway = Math.sin(phase * 1.6) * s * 0.04;
+
+    // Ground shadow
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.22)';
+    ctx.fillRect(px + s * 0.22, py + s * 0.78, s * 0.6, s * 0.16);
+
     // Trunk
-    ctx.fillStyle = '#5c3a21';
-    ctx.fillRect(px + s * 0.4, py + s * 0.45, Math.max(1, s * 0.2), s * 0.45);
+    ctx.fillStyle = '#4a2e16';
+    ctx.fillRect(px + s * 0.4, py + s * 0.46, Math.max(1, s * 0.2), s * 0.42);
+    ctx.fillStyle = '#6b4423';
+    ctx.fillRect(px + s * 0.42, py + s * 0.46, Math.max(1, s * 0.08), s * 0.42);
 
     if (type === 1) {
-      // Oak
-      ctx.fillStyle = '#1f6f2e';
-      ctx.fillRect(px + s * 0.15 + sway, py + s * 0.1, s * 0.7, s * 0.5);
-      ctx.fillStyle = '#2ea043';
-      ctx.fillRect(px + s * 0.22 + sway, py + s * 0.05, s * 0.55, s * 0.35);
-    } else if (type === 2) {
-      // Pine
+      // Oak: 3-tone layered pixel canopy
       ctx.fillStyle = '#14532d';
-      ctx.fillRect(px + s * 0.2 + sway, py + s * 0.25, s * 0.6, s * 0.35);
-      ctx.fillStyle = '#166534';
-      ctx.fillRect(px + s * 0.3 + sway, py + s * 0.05, s * 0.4, s * 0.28);
+      ctx.fillRect(px + s * 0.14 + sway, py + s * 0.18, s * 0.72, s * 0.42);
+      ctx.fillStyle = '#16a34a';
+      ctx.fillRect(px + s * 0.18 + sway, py + s * 0.1, s * 0.64, s * 0.36);
+      ctx.fillStyle = '#4ade80';
+      ctx.fillRect(px + s * 0.26 + sway, py + s * 0.08, s * 0.34, s * 0.18);
+    } else if (type === 2) {
+      // Pine: tiered dark-green triangles
+      ctx.fillStyle = '#064e3b';
+      ctx.fillRect(px + s * 0.18 + sway, py + s * 0.34, s * 0.64, s * 0.26);
+      ctx.fillStyle = '#047857';
+      ctx.fillRect(px + s * 0.26 + sway, py + s * 0.18, s * 0.48, s * 0.22);
+      ctx.fillStyle = '#10b981';
+      ctx.fillRect(px + s * 0.36 + sway, py + s * 0.04, s * 0.28, s * 0.18);
     } else {
-      // Palm
-      ctx.fillStyle = '#4d7c0f';
-      ctx.fillRect(px + s * 0.1 + sway, py + s * 0.12, s * 0.8, s * 0.25);
+      // Palm: curved fronds
+      ctx.fillStyle = '#3f6212';
+      ctx.fillRect(px + s * 0.08 + sway, py + s * 0.16, s * 0.84, s * 0.2);
       ctx.fillStyle = '#65a30d';
-      ctx.fillRect(px + s * 0.25 + sway, py + s * 0.05, s * 0.5, s * 0.2);
+      ctx.fillRect(px + s * 0.2 + sway, py + s * 0.08, s * 0.6, s * 0.18);
+      ctx.fillStyle = '#a3e635';
+      ctx.fillRect(px + s * 0.32 + sway, py + s * 0.06, s * 0.36, s * 0.1);
     }
   }
 }
