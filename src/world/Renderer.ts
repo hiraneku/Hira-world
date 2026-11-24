@@ -164,20 +164,23 @@ export class Renderer {
 
             // Deterministic micro-hash plus a larger shared ground pattern.
             const hash = ((x * 73856093) ^ (y * 19349663) ^ (sx * 83492791) ^ (sy * 2971215073)) & 15;
+            const gx = x * SUB + sx;
+            const gy = y * SUB + sy;
 
-            // Give grass and forest floors connected mossy patches like hand-placed
-            // pixel clusters; the noise uses world coordinates, so it never resets
-            // at the edge of each tile.
+            // Give the terrain connected pixel clusters; world-space noise never
+            // resets at tile boundaries, so color patches read as a continuous map.
             if (tile === TileType.GRASS || tile === TileType.FOREST) {
-              const ground = valueNoise((x * SUB + sx) / 11, (y * SUB + sy) / 11);
-              if (ground > 0.61) {
-                r += 11;
-                g += 20;
-                b += 6;
-              } else if (ground < 0.36) {
-                r -= 10;
-                g -= 18;
-                b -= 8;
+              const ground =
+                valueNoise(gx / 9, gy / 9) * 0.68 +
+                valueNoise(gx / 3.5, gy / 3.5) * 0.32;
+              if (ground > 0.62) {
+                r += 14;
+                g += 24;
+                b += 8;
+              } else if (ground < 0.34) {
+                r -= 13;
+                g -= 22;
+                b -= 10;
               }
               if (hash === 1) {
                 r += 5;
@@ -189,16 +192,37 @@ export class Renderer {
                 b -= 5;
               }
             } else if (tile === TileType.SAND) {
-              if (hash === 2) {
-                r -= 8;
-                g -= 7;
-                b -= 5;
+              const dune = valueNoise(gx / 8, gy / 8);
+              if (dune > 0.62) {
+                r += 9;
+                g += 8;
+                b += 3;
+              } else if (dune < 0.34 || hash === 2) {
+                r -= 10;
+                g -= 9;
+                b -= 6;
               }
             } else if (tile === TileType.SOIL) {
-              if (hash === 3) {
-                r -= 10;
-                g -= 8;
-                b -= 6;
+              const earth = valueNoise(gx / 6, gy / 6);
+              if (earth > 0.66) {
+                r += 12;
+                g += 8;
+                b += 4;
+              } else if (earth < 0.34 || hash === 3) {
+                r -= 12;
+                g -= 10;
+                b -= 7;
+              }
+            } else if (tile === TileType.DEEP_WATER || tile === TileType.SHALLOW_WATER) {
+              const ripple = valueNoise(gx / 7, gy / 7);
+              if (ripple > 0.67) {
+                r += 9;
+                g += 13;
+                b += 17;
+              } else if (ripple < 0.34) {
+                r -= 8;
+                g -= 6;
+                b -= 3;
               }
             } else if (tile === TileType.HILL || tile === TileType.MOUNTAIN) {
               const crack = ((x * 3 + sx) ^ (y * 5 + sy)) & 7;
@@ -371,7 +395,7 @@ export class Renderer {
 
         // Detailed Pixel Trees
         const tree = world.trees[idx];
-        // Micro-decorations on grass (flowers, bushes, mushrooms)
+        // Tiny flowers, shrubs, and grass tufts add scale without cluttering the ground.
         if ((tile === TileType.GRASS || tile === TileType.FOREST) && tree === 0 && tileSize >= 4) {
           const dHash = ((x * 92821) ^ (y * 68917)) & 63;
           if (dHash === 3) {
@@ -387,9 +411,9 @@ export class Renderer {
             // Keep small props on the same chunky pixel scale as the canopy art.
             ctx.drawImage(SPRITES.bush, px - tileSize * 0.05, py + tileSize * 0.12, tileSize * 1.1, tileSize * 0.72);
           } else if (dHash === 41) {
-            ctx.drawImage(SPRITES.mushroom, px + tileSize * 0.05, py + tileSize * 0.12, tileSize * 0.9, tileSize * 0.82);
+            ctx.drawImage(SPRITES.grassTuft, px + tileSize * 0.12, py + tileSize * 0.15, tileSize * 0.76, tileSize * 0.76);
           } else if (dHash === 53) {
-            ctx.drawImage(SPRITES.rock, px + tileSize * 0.02, py + tileSize * 0.18, tileSize * 0.96, tileSize * 0.68);
+            ctx.drawImage(SPRITES.flower, px + tileSize * 0.1, py + tileSize * 0.12, tileSize * 0.8, tileSize * 0.8);
           }
         }
 
@@ -471,7 +495,7 @@ export class Renderer {
     // Broad, overlapping canopies give the landscape the dense miniature-forest
     // silhouette of a god-sandbox map. Scale from the sprite's own pixel grid so
     // each leaf cluster stays crisp instead of being squeezed into one tile.
-    const pixelScale = Math.max(1, Math.floor(s / 8));
+    const pixelScale = s / 8;
     const drawW = sprite.width * pixelScale;
     const drawH = sprite.height * pixelScale;
 
