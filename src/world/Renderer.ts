@@ -195,6 +195,13 @@ export class Renderer {
               }
             }
 
+            // Land edge bevel shadow on bottom edge next to water
+            if (tile === TileType.SAND && sy === SUB - 1 && down <= TileType.SHALLOW_WATER) {
+              r -= 32;
+              g -= 28;
+              b -= 20;
+            }
+
             // Shoreline foam on shallow water next to land
             if (tile === TileType.SHALLOW_WATER) {
               const nearLand =
@@ -202,10 +209,10 @@ export class Renderer {
                 (sy === SUB - 1 && down > TileType.SHALLOW_WATER) ||
                 (sx === 0 && left > TileType.SHALLOW_WATER) ||
                 (sx === SUB - 1 && right > TileType.SHALLOW_WATER);
-              if (nearLand && hash % 2 === 0) {
-                r = 195;
-                g = 232;
-                b = 250;
+              if (nearLand) {
+                r = 185;
+                g = 228;
+                b = 248;
               }
             }
 
