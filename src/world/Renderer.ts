@@ -123,8 +123,8 @@ export class Renderer {
       for (let x = 0; x < w; x++) {
         const idx = y * w + x;
         const tile = world.tiles[idx] as TileType;
-        const variant = world.tileVariant[idx];
-        const base = TILE_BASE[tile][variant];
+        // Use index 0 as unified base so tile grid seams disappear
+        const base = TILE_BASE[tile][0];
 
         // Neighbor checks for edge shading / shorelines
         const up = y > 0 ? world.tiles[(y - 1) * w + x] : tile;
