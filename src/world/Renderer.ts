@@ -336,6 +336,8 @@ export class Renderer {
             ctx.drawImage(SPRITES.bush, px + tileSize * 0.15, py + tileSize * 0.2, tileSize * 0.7, tileSize * 0.55);
           } else if (dHash === 41) {
             ctx.drawImage(SPRITES.mushroom, px + tileSize * 0.2, py + tileSize * 0.25, tileSize * 0.6, tileSize * 0.6);
+          } else if (dHash === 53) {
+            ctx.drawImage(SPRITES.rock, px + tileSize * 0.15, py + tileSize * 0.3, tileSize * 0.7, tileSize * 0.5);
           }
         }
 

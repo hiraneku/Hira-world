@@ -1,4 +1,4 @@
-// High-detail pixel art sprites inspired by WorldBox
+// High-detail 16x18 pixel art sprites matching WorldBox zoom-in detail
 
 const PALETTE: Record<string, string> = {
   '.': '',
@@ -6,12 +6,16 @@ const PALETTE: Record<string, string> = {
   k: '#2b1a0e',
   t: '#4a2e16',
   T: '#704826',
+  b: '#8c5c32',
   // Oak / lush green
   d: '#134e26',
-  g: '#1d7535',
+  g: '#1f7a38',
   G: '#38a148',
   l: '#76cc49',
   L: '#a7e359',
+  // Fruit / blossom accents
+  f: '#ec4899',
+  r: '#ef4444',
   // Pine
   p: '#064e3b',
   P: '#047857',
@@ -21,24 +25,30 @@ const PALETTE: Record<string, string> = {
   A: '#65a30d',
   y: '#a3e635',
   // Red Mushroom
-  r: '#991b1b',
   R: '#dc2626',
   w: '#f8fafc',
   s: '#cbd5e1',
+  // Rock / Ore
+  o: '#334155',
+  O: '#64748b',
+  c: '#94a3b8',
+  i: '#38bdf8',
 };
 
 const OAK_SPRITE = [
-  '....llGGd.....',
-  '...lLLGGGGd...',
-  '..lLGGGGGGGg..',
-  '.lGGGGgGGGGgd.',
-  '.gGGggdgGGggd.',
-  '.dggd.ddgggdd.',
-  '..dd..tTt.dd..',
-  '......tTt.....',
-  '.....ktTtk....',
-  '.....ktttk....',
-  '....dktttkd...',
+  '.....llGGd......',
+  '...llGGGGGGd....',
+  '..lLLGGGGGGGg...',
+  '.lLGGGfGGGGGGd..',
+  '.lGGGgGGGGgGGd..',
+  '.gGGggdGGggGGd..',
+  '..dggd.ddgggdd..',
+  '...dd..tTb.dd...',
+  '.......tTb......',
+  '......ktTbk.....',
+  '......ktttk.....',
+  '.....dtTttbd....',
+  '....dk.tt..kd...',
 ];
 
 const PINE_SPRITE = [
@@ -78,9 +88,17 @@ const MUSHROOM_SPRITE = [
 const BUSH_SPRITE = [
   '..llGd..',
   '.lGGGGd.',
-  'gGGRGGgd',
+  'gGGrGGgd',
   'dgggggdd',
   '.dddddd.',
+];
+
+const ROCK_SPRITE = [
+  '..cOOo..',
+  '.cOOOOo.',
+  'cOOiOOOo',
+  'oOOOOooo',
+  '.oooooo.',
 ];
 
 function buildSpriteCanvas(rows: string[]): HTMLCanvasElement {
@@ -109,4 +127,5 @@ export const SPRITES = {
   palm: buildSpriteCanvas(PALM_SPRITE),
   mushroom: buildSpriteCanvas(MUSHROOM_SPRITE),
   bush: buildSpriteCanvas(BUSH_SPRITE),
+  rock: buildSpriteCanvas(ROCK_SPRITE),
 };
