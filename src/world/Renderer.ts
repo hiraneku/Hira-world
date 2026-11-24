@@ -348,11 +348,12 @@ export class Renderer {
             ctx.fillStyle = '#60a5fa';
             ctx.fillRect(px + tileSize * 0.45, py + tileSize * 0.65, Math.max(1.5, tileSize * 0.18), Math.max(1.5, tileSize * 0.18));
           } else if (dHash === 27) {
-            ctx.drawImage(SPRITES.bush, px + tileSize * 0.15, py + tileSize * 0.2, tileSize * 0.7, tileSize * 0.55);
+            // Keep small props on the same chunky pixel scale as the canopy art.
+            ctx.drawImage(SPRITES.bush, px - tileSize * 0.05, py + tileSize * 0.12, tileSize * 1.1, tileSize * 0.72);
           } else if (dHash === 41) {
-            ctx.drawImage(SPRITES.mushroom, px + tileSize * 0.2, py + tileSize * 0.25, tileSize * 0.6, tileSize * 0.6);
+            ctx.drawImage(SPRITES.mushroom, px + tileSize * 0.05, py + tileSize * 0.12, tileSize * 0.9, tileSize * 0.82);
           } else if (dHash === 53) {
-            ctx.drawImage(SPRITES.rock, px + tileSize * 0.15, py + tileSize * 0.3, tileSize * 0.7, tileSize * 0.5);
+            ctx.drawImage(SPRITES.rock, px + tileSize * 0.02, py + tileSize * 0.18, tileSize * 0.96, tileSize * 0.68);
           }
         }
 
@@ -427,24 +428,32 @@ export class Renderer {
     type: number,
     phase: number
   ): void {
-    const sway = Math.sin(phase * 1.6) * s * 0.04;
-
-    // Soft ground shadow
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.24)';
-    ctx.fillRect(px + s * 0.18, py + s * 0.78, s * 0.64, s * 0.18);
-
+    const sway = Math.sin(phase * 1.6) * s * 0.025;
     const sprite =
       type === 1 ? SPRITES.oak : type === 2 ? SPRITES.pine : SPRITES.palm;
 
-    // Draw sprite slightly taller than 1 tile for organic overlap
-    const drawW = s * 1.25;
-    const drawH = s * 1.25;
-    ctx.drawImage(
-      sprite,
-      px - s * 0.12 + sway,
-      py - s * 0.32,
-      drawW,
-      drawH
-    );
+    // Broad, overlapping canopies give the landscape the dense miniature-forest
+    // silhouette of a god-sandbox map. Scale from the sprite's own pixel grid so
+    // each leaf cluster stays crisp instead of being squeezed into one tile.
+    const pixelScale = Math.max(1, Math.floor(s / 8));
+    const drawW = sprite.width * pixelScale;
+    const drawH = sprite.height * pixelScale;
+
+    // A compact shadow under the trunk grounds the tree without a soft blur.
+    ctx.fillStyle = 'rgba(15, 32, 20, 0.42)';
+    ctx.fillRect(px + s * 0.12, py + s * 0.82, s * 0.78, Math.max(1, s * 0.16));
+
+    const drawX = px + s * 0.5 - drawW * 0.5 + sway;
+    const drawY = py + s - drawH;
+    const flip = (Math.floor(px / s) * 17 + Math.floor(py / s) * 31) % 2 === 1;
+    if (flip) {
+      // Mirroring the handcrafted sprite gives nearby trees a less stamped look.
+      ctx.save();
+      ctx.translate(px + s * 0.5, 0);
+      ctx.scale(-1, 1);
+      ctx.translate(-(px + s * 0.5), 0);
+    }
+    ctx.drawImage(sprite, drawX, drawY, drawW, drawH);
+    if (flip) ctx.restore();
   }
 }

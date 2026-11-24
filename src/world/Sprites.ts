@@ -2,17 +2,17 @@
 
 const PALETTE: Record<string, string> = {
   '.': '',
-  // Trunk & bark
-  k: '#2b1a0e',
-  t: '#4a2e16',
-  T: '#704826',
-  b: '#8c5c32',
-  // Oak / lush green
-  d: '#134e26',
-  g: '#1f7a38',
-  G: '#38a148',
-  l: '#76cc49',
-  L: '#a7e359',
+  // Trunk & bark: a dark outline, warm midtone, and sunlit bark pixels.
+  k: '#34251d',
+  t: '#59402c',
+  T: '#805735',
+  b: '#a37442',
+  // Oak canopy: four related greens create readable clumps and highlights.
+  d: '#174524',
+  g: '#287a36',
+  G: '#449d3e',
+  l: '#78c64a',
+  L: '#a5df59',
   // Fruit / blossom accents
   f: '#ec4899',
   r: '#ef4444',
