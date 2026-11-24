@@ -4,6 +4,30 @@ import { World } from './World';
 
 const SUB = 4; // 4x4 sub-pixels per tile for high-detail pixel art
 
+function hash2D(x: number, y: number): number {
+  let value = (Math.imul(x, 374761393) + Math.imul(y, 668265263)) | 0;
+  value = Math.imul(value ^ (value >>> 13), 1274126177);
+  return ((value ^ (value >>> 16)) >>> 0) / 4294967295;
+}
+
+// Smooth deterministic noise shared across tile boundaries makes the ground
+// read as connected patches instead of a checkerboard of identical squares.
+function valueNoise(x: number, y: number): number {
+  const x0 = Math.floor(x);
+  const y0 = Math.floor(y);
+  const tx = x - x0;
+  const ty = y - y0;
+  const sx = tx * tx * (3 - 2 * tx);
+  const sy = ty * ty * (3 - 2 * ty);
+  const a = hash2D(x0, y0);
+  const b = hash2D(x0 + 1, y0);
+  const c = hash2D(x0, y0 + 1);
+  const d = hash2D(x0 + 1, y0 + 1);
+  const top = a + (b - a) * sx;
+  const bottom = c + (d - c) * sx;
+  return top + (bottom - top) * sy;
+}
+
 const TILE_BASE: Record<TileType, [number, number, number][]> = {
   [TileType.DEEP_WATER]: [
     [44, 107, 179],
@@ -138,19 +162,31 @@ export class Renderer {
             let g = base[1];
             let b = base[2];
 
-            // Deterministic micro-hash per subpixel
+            // Deterministic micro-hash plus a larger shared ground pattern.
             const hash = ((x * 73856093) ^ (y * 19349663) ^ (sx * 83492791) ^ (sy * 2971215073)) & 15;
 
-            // Micro-texture details (subtle, organic, non-noisy)
+            // Give grass and forest floors connected mossy patches like hand-placed
+            // pixel clusters; the noise uses world coordinates, so it never resets
+            // at the edge of each tile.
             if (tile === TileType.GRASS || tile === TileType.FOREST) {
-              if (hash === 1) {
-                r += 8;
-                g += 12;
+              const ground = valueNoise((x * SUB + sx) / 11, (y * SUB + sy) / 11);
+              if (ground > 0.61) {
+                r += 11;
+                g += 20;
                 b += 6;
+              } else if (ground < 0.36) {
+                r -= 10;
+                g -= 18;
+                b -= 8;
+              }
+              if (hash === 1) {
+                r += 5;
+                g += 9;
+                b += 3;
               } else if (hash === 5) {
-                r -= 8;
-                g -= 10;
-                b -= 6;
+                r -= 7;
+                g -= 9;
+                b -= 5;
               }
             } else if (tile === TileType.SAND) {
               if (hash === 2) {
@@ -336,7 +372,7 @@ export class Renderer {
         // Detailed Pixel Trees
         const tree = world.trees[idx];
         // Micro-decorations on grass (flowers, bushes, mushrooms)
-        if (tile === TileType.GRASS && tree === 0 && tileSize >= 4) {
+        if ((tile === TileType.GRASS || tile === TileType.FOREST) && tree === 0 && tileSize >= 4) {
           const dHash = ((x * 92821) ^ (y * 68917)) & 63;
           if (dHash === 3) {
             ctx.fillStyle = '#ef4444';

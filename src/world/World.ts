@@ -76,14 +76,17 @@ export class World {
             this.treeCount++;
           }
         } else if (e < 0.64) {
-          tile = m > 0.46 ? TileType.GRASS : TileType.SOIL;
-          if (tile === TileType.GRASS && m > 0.53 && Math.random() < 0.24) {
+          // Moist pockets become darker woodland clearings, not just one flat
+          // green carpet. Higher tree odds make those pockets read as forests.
+          tile = m > 0.63 ? TileType.FOREST : m > 0.46 ? TileType.GRASS : TileType.SOIL;
+          const treeChance = tile === TileType.FOREST ? 0.44 : 0.32;
+          if ((tile === TileType.GRASS || tile === TileType.FOREST) && m > 0.53 && Math.random() < treeChance) {
             this.trees[idx] = 1; // oak
             this.treeCount++;
           }
         } else if (e < 0.74) {
           tile = TileType.HILL;
-          if (m > 0.5 && Math.random() < 0.14) {
+          if (m > 0.5 && Math.random() < 0.22) {
             this.trees[idx] = 2; // pine
             this.treeCount++;
           }
