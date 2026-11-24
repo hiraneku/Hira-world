@@ -173,14 +173,14 @@ export class Renderer {
               const ground =
                 valueNoise(gx / 9, gy / 9) * 0.68 +
                 valueNoise(gx / 3.5, gy / 3.5) * 0.32;
-              if (ground > 0.62) {
-                r += 14;
-                g += 24;
-                b += 8;
+              if (ground > 0.64) {
+                r += 8;
+                g += 14;
+                b += 5;
               } else if (ground < 0.34) {
-                r -= 13;
-                g -= 22;
-                b -= 10;
+                r -= 8;
+                g -= 13;
+                b -= 6;
               }
               if (hash === 1) {
                 r += 5;
@@ -489,13 +489,18 @@ export class Renderer {
     phase: number
   ): void {
     const sway = Math.sin(phase * 1.6) * s * 0.025;
+    const tileX = Math.floor(px / s);
+    const tileY = Math.floor(py / s);
+    const treeVariant = (tileX * 17 + tileY * 31) & 3;
     const sprite =
-      type === 1 ? SPRITES.oak : type === 2 ? SPRITES.pine : SPRITES.palm;
+      type === 1
+        ? treeVariant === 0 ? SPRITES.oakAlt : SPRITES.oak
+        : type === 2 ? SPRITES.pine : SPRITES.palm;
 
-    // Broad, overlapping canopies give the landscape the dense miniature-forest
-    // silhouette of a god-sandbox map. Scale from the sprite's own pixel grid so
-    // each leaf cluster stays crisp instead of being squeezed into one tile.
-    const pixelScale = s / 8;
+    // Keep canopies distinct at map scale; slight per-tree size differences and
+    // two oak silhouettes prevent the forest from reading as a repeated stamp.
+    const sizeVariation = [0.92, 1.04, 0.98, 1.08][treeVariant];
+    const pixelScale = (s / 8) * sizeVariation;
     const drawW = sprite.width * pixelScale;
     const drawH = sprite.height * pixelScale;
 
@@ -505,7 +510,7 @@ export class Renderer {
 
     const drawX = px + s * 0.5 - drawW * 0.5 + sway;
     const drawY = py + s - drawH;
-    const flip = (Math.floor(px / s) * 17 + Math.floor(py / s) * 31) % 2 === 1;
+    const flip = (treeVariant & 1) === 1;
     if (flip) {
       // Mirroring the handcrafted sprite gives nearby trees a less stamped look.
       ctx.save();
