@@ -141,50 +141,58 @@ export class Renderer {
             // Deterministic micro-hash per subpixel
             const hash = ((x * 73856093) ^ (y * 19349663) ^ (sx * 83492791) ^ (sy * 2971215073)) & 15;
 
-            // Micro-texture details
+            // Micro-texture details (subtle, organic, non-noisy)
             if (tile === TileType.GRASS || tile === TileType.FOREST) {
-              if (hash === 1 || hash === 9) {
-                r += 16;
-                g += 22;
-                b += 10;
+              if (hash === 1) {
+                r += 8;
+                g += 12;
+                b += 6;
               } else if (hash === 5) {
-                r -= 14;
-                g -= 18;
-                b -= 10;
+                r -= 8;
+                g -= 10;
+                b -= 6;
               }
             } else if (tile === TileType.SAND) {
               if (hash === 2) {
-                r -= 16;
-                g -= 14;
-                b -= 12;
-              } else if (hash === 11) {
-                r += 10;
-                g += 10;
-                b += 8;
+                r -= 8;
+                g -= 7;
+                b -= 5;
               }
             } else if (tile === TileType.SOIL) {
-              if (hash === 3 || hash === 12) {
-                r -= 18;
-                g -= 14;
-                b -= 10;
+              if (hash === 3) {
+                r -= 10;
+                g -= 8;
+                b -= 6;
               }
             } else if (tile === TileType.HILL || tile === TileType.MOUNTAIN) {
-              // Natural rocky crack pattern
               const crack = ((x * 3 + sx) ^ (y * 5 + sy)) & 7;
-              if (crack === 0 || (sx === 1 && sy === 2 && hash < 6)) {
-                r -= 24;
-                g -= 24;
-                b -= 22;
-              } else if (hash < 3) {
-                r += 16;
-                g += 16;
-                b += 18;
+              if (crack === 0) {
+                r -= 16;
+                g -= 16;
+                b -= 14;
+              } else if (hash < 2) {
+                r += 10;
+                g += 10;
+                b += 12;
               }
             } else if (tile === TileType.ASH && hash === 4) {
-              // Glowing ember speck in ash
               r = 180;
               g = 65;
               b = 20;
+            }
+
+            // Rounded corner auto-tiling for organic coastlines & cliffs
+            if (tile > TileType.SHALLOW_WATER) {
+              const isTopLeft = sx === 0 && sy === 0 && up < tile && left < tile;
+              const isTopRight = sx === SUB - 1 && sy === 0 && up < tile && right < tile;
+              const isBotLeft = sx === 0 && sy === SUB - 1 && down < tile && left < tile;
+              const isBotRight = sx === SUB - 1 && sy === SUB - 1 && down < tile && right < tile;
+              if (isTopLeft || isTopRight || isBotLeft || isBotRight) {
+                const lower = TILE_BASE[down < tile ? (down as TileType) : (up as TileType)][0];
+                r = lower[0];
+                g = lower[1];
+                b = lower[2];
+              }
             }
 
             // Shoreline foam on shallow water next to land
