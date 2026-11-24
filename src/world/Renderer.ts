@@ -169,14 +169,16 @@ export class Renderer {
                 b -= 10;
               }
             } else if (tile === TileType.HILL || tile === TileType.MOUNTAIN) {
-              if (hash < 3) {
-                r += 14;
-                g += 14;
-                b += 16;
-              } else if (hash === 14) {
-                r -= 18;
-                g -= 18;
-                b -= 16;
+              // Natural rocky crack pattern
+              const crack = ((x * 3 + sx) ^ (y * 5 + sy)) & 7;
+              if (crack === 0 || (sx === 1 && sy === 2 && hash < 6)) {
+                r -= 24;
+                g -= 24;
+                b -= 22;
+              } else if (hash < 3) {
+                r += 16;
+                g += 16;
+                b += 18;
               }
             } else if (tile === TileType.ASH && hash === 4) {
               // Glowing ember speck in ash
@@ -318,18 +320,22 @@ export class Renderer {
 
         // Detailed Pixel Trees
         const tree = world.trees[idx];
-        // Micro-decorations on grass (tiny flowers)
+        // Micro-decorations on grass (flowers, bushes, mushrooms)
         if (tile === TileType.GRASS && tree === 0 && tileSize >= 4) {
-          const dHash = ((x * 92821) ^ (y * 68917)) & 31;
+          const dHash = ((x * 92821) ^ (y * 68917)) & 63;
           if (dHash === 3) {
-            ctx.fillStyle = '#ef4444'; // red flower
+            ctx.fillStyle = '#ef4444';
             ctx.fillRect(px + tileSize * 0.3, py + tileSize * 0.4, Math.max(1.5, tileSize * 0.2), Math.max(1.5, tileSize * 0.2));
           } else if (dHash === 11) {
-            ctx.fillStyle = '#facc15'; // yellow flower
+            ctx.fillStyle = '#facc15';
             ctx.fillRect(px + tileSize * 0.6, py + tileSize * 0.3, Math.max(1.5, tileSize * 0.2), Math.max(1.5, tileSize * 0.2));
           } else if (dHash === 19) {
-            ctx.fillStyle = '#60a5fa'; // blue flower
+            ctx.fillStyle = '#60a5fa';
             ctx.fillRect(px + tileSize * 0.45, py + tileSize * 0.65, Math.max(1.5, tileSize * 0.18), Math.max(1.5, tileSize * 0.18));
+          } else if (dHash === 27) {
+            ctx.drawImage(SPRITES.bush, px + tileSize * 0.15, py + tileSize * 0.2, tileSize * 0.7, tileSize * 0.55);
+          } else if (dHash === 41) {
+            ctx.drawImage(SPRITES.mushroom, px + tileSize * 0.2, py + tileSize * 0.25, tileSize * 0.6, tileSize * 0.6);
           }
         }
 

@@ -1,15 +1,17 @@
-// Pre-rendered high-detail pixel art sprites (cached on offscreen canvases for 60 FPS)
+// High-detail pixel art sprites inspired by WorldBox
 
 const PALETTE: Record<string, string> = {
   '.': '',
-  // Trunk
+  // Trunk & bark
+  k: '#2b1a0e',
   t: '#4a2e16',
-  T: '#6b4423',
-  // Oak / Green leaves
-  d: '#14532d',
-  g: '#1f7a38',
+  T: '#704826',
+  // Oak / lush green
+  d: '#134e26',
+  g: '#1d7535',
   G: '#38a148',
-  l: '#74c947',
+  l: '#76cc49',
+  L: '#a7e359',
   // Pine
   p: '#064e3b',
   P: '#047857',
@@ -18,32 +20,38 @@ const PALETTE: Record<string, string> = {
   a: '#3f6212',
   A: '#65a30d',
   y: '#a3e635',
+  // Red Mushroom
+  r: '#991b1b',
+  R: '#dc2626',
+  w: '#f8fafc',
+  s: '#cbd5e1',
 };
 
 const OAK_SPRITE = [
-  '....lGG.....',
-  '...lGGGGd...',
-  '..lGGGGGGd..',
-  '.lGGGgGGGgd.',
-  '.gGGgdgGGgd.',
-  '.dggd.dggdd.',
-  '..dd..Ttd...',
-  '......Tt....',
-  '......Tt....',
-  '.....dttd...',
+  '....llGGd.....',
+  '...lLLGGGGd...',
+  '..lLGGGGGGGg..',
+  '.lGGGGgGGGGgd.',
+  '.gGGggdgGGggd.',
+  '.dggd.ddgggdd.',
+  '..dd..tTt.dd..',
+  '......tTt.....',
+  '.....ktTtk....',
+  '.....ktttk....',
+  '....dktttkd...',
 ];
 
 const PINE_SPRITE = [
   '.....mm.....',
-  '....mPPm....',
+  '....mPPp....',
   '...mPPPPp...',
   '....PppP....',
   '...mPPPPp...',
   '..mPPPPPPp..',
   '...pPppPp...',
-  '.....Tt.....',
-  '.....Tt.....',
-  '....dttd....',
+  '....tTtk....',
+  '....tTtk....',
+  '...dkttkd...',
 ];
 
 const PALM_SPRITE = [
@@ -55,6 +63,24 @@ const PALM_SPRITE = [
   '.....Tt.....',
   '....dttd....',
   '....dttd....',
+];
+
+const MUSHROOM_SPRITE = [
+  '..RRRR..',
+  '.RwRRwR.',
+  'RRRwRRRR',
+  'rrrrrrrr',
+  '..swws..',
+  '..swws..',
+  '.dswwsd.',
+];
+
+const BUSH_SPRITE = [
+  '..llGd..',
+  '.lGGGGd.',
+  'gGGRGGgd',
+  'dgggggdd',
+  '.dddddd.',
 ];
 
 function buildSpriteCanvas(rows: string[]): HTMLCanvasElement {
@@ -81,4 +107,6 @@ export const SPRITES = {
   oak: buildSpriteCanvas(OAK_SPRITE),
   pine: buildSpriteCanvas(PINE_SPRITE),
   palm: buildSpriteCanvas(PALM_SPRITE),
+  mushroom: buildSpriteCanvas(MUSHROOM_SPRITE),
+  bush: buildSpriteCanvas(BUSH_SPRITE),
 };
