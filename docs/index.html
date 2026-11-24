@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>HiraWorld — God Sandbox Simulator</title>
+    <script type="module" crossorigin src="./assets/index-Csy3pu5f.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-BtZAYLT7.css">
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="world-canvas"></canvas>
+
+      <!-- Top HUD -->
+      <header class="hud-top">
+        <div class="hud-group">
+          <div class="brand-badge">
+            <span class="brand-icon">🌍</span>
+            <span class="brand-title">HiraWorld</span>
+          </div>
+          <div class="stat-pill" id="stat-date">Year 1 · Spring</div>
+          <div class="stat-pill" id="stat-tiles">Trees: 0</div>
+        </div>
+
+        <div class="hud-group">
+          <div class="speed-controls" role="group" aria-label="Simulation speed">
+            <button class="hud-btn speed-btn" data-speed="0" title="Pause">⏸</button>
+            <button class="hud-btn speed-btn active" data-speed="1" title="Normal (1x)">1x</button>
+            <button class="hud-btn speed-btn" data-speed="2" title="Fast (2x)">2x</button>
+            <button class="hud-btn speed-btn" data-speed="5" title="Ultra (5x)">5x</button>
+          </div>
+          <button class="hud-btn action-btn" id="btn-new-world" title="Generate New World">
+            🎲 New World
+          </button>
+        </div>
+      </header>
+
+      <!-- Bottom Power Dock -->
+      <footer class="hud-bottom">
+        <div class="dock-tabs">
+          <button class="tab-btn active" data-tab="terrain">⛰️ Terrain</button>
+          <button class="tab-btn" data-tab="nature">🌿 Nature</button>
+          <button class="tab-btn" data-tab="disasters">☄️ Disasters</button>
+
+          <div class="brush-sizes" title="Brush Size">
+            <span class="brush-label">Size:</span>
+            <button class="size-btn" data-size="1">S</button>
+            <button class="size-btn active" data-size="3">M</button>
+            <button class="size-btn" data-size="6">L</button>
+            <button class="size-btn" data-size="10">XL</button>
+          </div>
+        </div>
+
+        <div class="dock-tools" id="dock-tools"></div>
+      </footer>
+
+      <div class="controls-hint" id="controls-hint">
+        Left Click / 1-Finger: Paint · Right Drag / 2-Finger: Pan · Scroll / Pinch: Zoom
+      </div>
+    </div>
+
+  </body>
+</html>
