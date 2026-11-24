@@ -1,3 +1,4 @@
+import { SPRITES } from './Sprites';
 import { TileType } from './types';
 import { World } from './World';
 
@@ -317,6 +318,22 @@ export class Renderer {
 
         // Detailed Pixel Trees
         const tree = world.trees[idx];
+        // Micro-decorations on grass (tiny flowers)
+        if (tile === TileType.GRASS && tree === 0 && tileSize >= 4) {
+          const dHash = ((x * 92821) ^ (y * 68917)) & 31;
+          if (dHash === 3) {
+            ctx.fillStyle = '#ef4444'; // red flower
+            ctx.fillRect(px + tileSize * 0.3, py + tileSize * 0.4, Math.max(1.5, tileSize * 0.2), Math.max(1.5, tileSize * 0.2));
+          } else if (dHash === 11) {
+            ctx.fillStyle = '#facc15'; // yellow flower
+            ctx.fillRect(px + tileSize * 0.6, py + tileSize * 0.3, Math.max(1.5, tileSize * 0.2), Math.max(1.5, tileSize * 0.2));
+          } else if (dHash === 19) {
+            ctx.fillStyle = '#60a5fa'; // blue flower
+            ctx.fillRect(px + tileSize * 0.45, py + tileSize * 0.65, Math.max(1.5, tileSize * 0.18), Math.max(1.5, tileSize * 0.18));
+          }
+        }
+
+        // Detailed Pixel Trees
         if (tree !== 0 && tileSize >= 3) {
           this.drawPixelTree(ctx, px, py, tileSize, tree, timeSec + x * 0.35);
         }
@@ -389,40 +406,22 @@ export class Renderer {
   ): void {
     const sway = Math.sin(phase * 1.6) * s * 0.04;
 
-    // Ground shadow
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.22)';
-    ctx.fillRect(px + s * 0.22, py + s * 0.78, s * 0.6, s * 0.16);
+    // Soft ground shadow
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.24)';
+    ctx.fillRect(px + s * 0.18, py + s * 0.78, s * 0.64, s * 0.18);
 
-    // Trunk
-    ctx.fillStyle = '#4a2e16';
-    ctx.fillRect(px + s * 0.4, py + s * 0.46, Math.max(1, s * 0.2), s * 0.42);
-    ctx.fillStyle = '#6b4423';
-    ctx.fillRect(px + s * 0.42, py + s * 0.46, Math.max(1, s * 0.08), s * 0.42);
+    const sprite =
+      type === 1 ? SPRITES.oak : type === 2 ? SPRITES.pine : SPRITES.palm;
 
-    if (type === 1) {
-      // Oak: 3-tone layered pixel canopy
-      ctx.fillStyle = '#14532d';
-      ctx.fillRect(px + s * 0.14 + sway, py + s * 0.18, s * 0.72, s * 0.42);
-      ctx.fillStyle = '#16a34a';
-      ctx.fillRect(px + s * 0.18 + sway, py + s * 0.1, s * 0.64, s * 0.36);
-      ctx.fillStyle = '#4ade80';
-      ctx.fillRect(px + s * 0.26 + sway, py + s * 0.08, s * 0.34, s * 0.18);
-    } else if (type === 2) {
-      // Pine: tiered dark-green triangles
-      ctx.fillStyle = '#064e3b';
-      ctx.fillRect(px + s * 0.18 + sway, py + s * 0.34, s * 0.64, s * 0.26);
-      ctx.fillStyle = '#047857';
-      ctx.fillRect(px + s * 0.26 + sway, py + s * 0.18, s * 0.48, s * 0.22);
-      ctx.fillStyle = '#10b981';
-      ctx.fillRect(px + s * 0.36 + sway, py + s * 0.04, s * 0.28, s * 0.18);
-    } else {
-      // Palm: curved fronds
-      ctx.fillStyle = '#3f6212';
-      ctx.fillRect(px + s * 0.08 + sway, py + s * 0.16, s * 0.84, s * 0.2);
-      ctx.fillStyle = '#65a30d';
-      ctx.fillRect(px + s * 0.2 + sway, py + s * 0.08, s * 0.6, s * 0.18);
-      ctx.fillStyle = '#a3e635';
-      ctx.fillRect(px + s * 0.32 + sway, py + s * 0.06, s * 0.36, s * 0.1);
-    }
+    // Draw sprite slightly taller than 1 tile for organic overlap
+    const drawW = s * 1.25;
+    const drawH = s * 1.25;
+    ctx.drawImage(
+      sprite,
+      px - s * 0.12 + sway,
+      py - s * 0.32,
+      drawW,
+      drawH
+    );
   }
 }
