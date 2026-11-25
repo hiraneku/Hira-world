@@ -455,6 +455,16 @@ export class Renderer {
           }
         }
 
+        // Rock and ore outcrops are embedded in stony elevation tiles only.
+        if ((tile === TileType.HILL || tile === TileType.MOUNTAIN) && tree === 0 && tileSize >= 4) {
+          const outcrop = ((x * 4139) ^ (y * 7919)) & 63;
+          if (outcrop === 9) {
+            ctx.drawImage(SPRITES.rock, px - tileSize * 0.55, py - tileSize * 0.2, tileSize * 2.1, tileSize * 1.45);
+          } else if (outcrop === 41) {
+            ctx.drawImage(SPRITES.ore, px - tileSize * 0.42, py - tileSize * 0.18, tileSize * 1.85, tileSize * 1.3);
+          }
+        }
+
         // Detailed Pixel Trees
         if (tree !== 0 && tileSize >= 3) {
           this.drawPixelTree(ctx, px, py, tileSize, tree, timeSec + x * 0.35);
@@ -533,7 +543,13 @@ export class Renderer {
     const sprite =
       type === 1
         ? treeVariant === 0 ? SPRITES.oakAlt : SPRITES.oak
-        : type === 2 ? SPRITES.pine : SPRITES.palm;
+        : type === 2
+          ? SPRITES.pine
+          : type === 3
+            ? SPRITES.palm
+            : type === 4
+              ? SPRITES.autumn
+              : SPRITES.deadTree;
 
     // Keep canopies distinct at map scale; slight per-tree size differences and
     // two oak silhouettes prevent the forest from reading as a repeated stamp.

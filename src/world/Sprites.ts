@@ -110,6 +110,31 @@ function createOak(variant: number): HTMLCanvasElement {
   return canvas;
 }
 
+function createAutumnOak(): HTMLCanvasElement {
+  const canvas = createOak(1);
+  const ctx = canvas.getContext('2d')!;
+  const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const recolor = new Map<number, number>([
+    [0x315f36, 0x795331],
+    [0x3e7b3d, 0x9a6535],
+    [0x559747, 0xb97838],
+    [0x78b84d, 0xd39243],
+    [0xa2d45d, 0xe8bd5d],
+  ]);
+  for (let i = 0; i < image.data.length; i += 4) {
+    const key = (image.data[i] << 16) | (image.data[i + 1] << 8) | image.data[i + 2];
+    const autumn = recolor.get(key);
+    if (autumn === undefined) continue;
+    image.data[i] = (autumn >> 16) & 255;
+    image.data[i + 1] = (autumn >> 8) & 255;
+    image.data[i + 2] = autumn & 255;
+  }
+  ctx.putImageData(image, 0, 0);
+  leafBlob(ctx, 7, 5, 2, 1.5, '#e8bd5d', 2);
+  leafBlob(ctx, 16, 7, 2, 1.5, '#d39243', 3);
+  return canvas;
+}
+
 function createPine(): HTMLCanvasElement {
   const { canvas, ctx } = makeCanvas(24, 25);
   const center = 12;
@@ -173,6 +198,33 @@ function drawPixelLine(
   }
 }
 
+function createDeadTree(): HTMLCanvasElement {
+  const { canvas, ctx } = makeCanvas(24, 25);
+  const bark = '#4d4948';
+  const shade = '#302f33';
+  const light = '#77716a';
+  const branches: [number, number][][] = [
+    [[12, 23], [12, 18], [11, 13], [12, 8], [12, 3]],
+    [[12, 17], [9, 14], [7, 11], [4, 9]],
+    [[8, 12], [6, 12], [4, 10]],
+    [[11, 14], [14, 11], [16, 8], [19, 6]],
+    [[16, 8], [16, 5], [18, 3]],
+    [[12, 11], [9, 8], [8, 5]],
+    [[12, 9], [14, 6], [14, 3]],
+    [[12, 19], [15, 16], [17, 13]],
+    [[7, 11], [6, 8]],
+    [[19, 6], [21, 4]],
+  ];
+  for (const branch of branches) drawPixelLine(ctx, branch, shade, -1, 0);
+  for (const branch of branches) drawPixelLine(ctx, branch, bark);
+  drawPixelLine(ctx, [[12, 16], [12, 22]], light);
+  drawPixelLine(ctx, [[7, 11], [5, 9]], light);
+  drawPixelLine(ctx, [[16, 8], [18, 6]], light);
+  pixel(ctx, 11, 24, shade);
+  pixel(ctx, 13, 24, shade);
+  return canvas;
+}
+
 function createPalm(): HTMLCanvasElement {
   const { canvas, ctx } = makeCanvas(25, 25);
   const crown: [number, number] = [12, 7];
@@ -199,6 +251,45 @@ function createPalm(): HTMLCanvasElement {
   drawPixelLine(ctx, trunk.slice(1), C.barkLight, 1, 0);
   pixel(ctx, 9, 23, C.barkShadow);
   pixel(ctx, 15, 23, C.barkShadow);
+  return canvas;
+}
+
+function createRock(ore: boolean): HTMLCanvasElement {
+  const { canvas, ctx } = makeCanvas(16, 11);
+  const rockRows = [
+    '......dddd......',
+    '....ddMMMMdd....',
+    '..ddMMMMMMMMdd..',
+    '.dMMMMMMmmMMMMd.',
+    'dMMMMMmmMMMMMMMd',
+    'dMMmMMMMMMMMMMMd',
+    '.dMMMMMMMMMMMMd.',
+    '..ddMMMMMMMMdd..',
+    '....dddddddd....',
+  ];
+  const rockColors: Record<string, string> = {
+    '.': '', d: '#3f454c', m: '#555d66', M: '#777f88',
+    l: '#a3a8ac', w: '#dce2e4', c: '#4e8791', C: '#72cbd0',
+  };
+  for (let y = 0; y < rockRows.length; y++) {
+    for (let x = 0; x < rockRows[y].length; x++) {
+      const color = rockColors[rockRows[y][x]];
+      if (color) {
+        ctx.fillStyle = color;
+        ctx.fillRect(x, y + 1, 1, 1);
+      }
+    }
+  }
+  if (ore) {
+    // A couple of bright mineral pixels are embedded in the rock, not scattered on grass.
+    pixel(ctx, 7, 4, '#4e8791');
+    pixel(ctx, 8, 3, '#72cbd0');
+    pixel(ctx, 9, 4, '#4e8791');
+    pixel(ctx, 8, 5, '#72cbd0');
+  } else {
+    pixel(ctx, 5, 3, '#a3a8ac');
+    pixel(ctx, 11, 5, '#a3a8ac');
+  }
   return canvas;
 }
 
@@ -242,11 +333,15 @@ const FLOWER = [
 export const SPRITES = {
   oak: createOak(0),
   oakAlt: createOak(1),
+  autumn: createAutumnOak(),
   pine: createPine(),
+  deadTree: createDeadTree(),
   palm: createPalm(),
   bush: buildSpriteCanvas(BUSH, PLANT_PALETTE),
   grassTuft: buildSpriteCanvas(GRASS_TUFT, PLANT_PALETTE),
   flower: buildSpriteCanvas(FLOWER, PLANT_PALETTE),
+  rock: createRock(false),
+  ore: createRock(true),
 };
 
 const ICON_PALETTE: Record<string, string> = {

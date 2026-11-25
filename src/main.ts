@@ -208,6 +208,19 @@ function renderDockTools(): void {
 }
 
 document.querySelectorAll<HTMLButtonElement>('.tab-btn').forEach((btn) => {
+  const categoryIcon = btn.dataset.tab === 'nature'
+    ? TOOL_ICONS.forest_trees
+    : btn.dataset.tab === 'disasters'
+      ? TOOL_ICONS.meteor
+      : TOOL_ICONS.mountain;
+  const tabIcon = document.createElement('canvas');
+  tabIcon.className = 'tab-icon';
+  tabIcon.width = categoryIcon.width;
+  tabIcon.height = categoryIcon.height;
+  tabIcon.setAttribute('aria-hidden', 'true');
+  tabIcon.getContext('2d')!.drawImage(categoryIcon, 0, 0);
+  btn.prepend(tabIcon);
+
   btn.addEventListener('click', () => {
     document.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
     btn.classList.add('active');

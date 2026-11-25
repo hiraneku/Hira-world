@@ -169,6 +169,9 @@ body,
 }
 
 .tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   background: rgba(255, 255, 255, 0.06);
   border: 1.5px solid var(--border-panel);
   border-radius: 8px;
@@ -178,6 +181,13 @@ body,
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s;
+}
+
+.tab-icon {
+  width: 16px;
+  height: 16px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }
 
 .tab-btn.active {

@@ -7,7 +7,7 @@ export class World {
   public readonly width: number;
   public readonly height: number;
   public tiles: Uint8Array;
-  public trees: Uint8Array; // 0 = none, 1 = oak, 2 = pine, 3 = palm
+  public trees: Uint8Array; // 0 = none, 1 = oak, 2 = pine, 3 = palm, 4 = autumn, 5 = dead
   public fire: Uint8Array;  // 0 = none, 1..255 = burn timer
   public tileVariant: Uint8Array; // 0..3 for pixel dithering
   public particles: Particle[] = [];
@@ -78,16 +78,22 @@ export class World {
         } else if (e < 0.64) {
           // Moist pockets become darker woodland clearings, not just one flat
           // green carpet. Higher tree odds make those pockets read as forests.
-          tile = m > 0.62 ? TileType.FOREST : m > 0.46 ? TileType.GRASS : TileType.SOIL;
+          tile = m > 0.6 ? TileType.FOREST : m > 0.46 ? TileType.GRASS : TileType.SOIL;
           const treeChance = tile === TileType.FOREST ? 0.56 : 0.34;
           if ((tile === TileType.GRASS || tile === TileType.FOREST) && m > 0.53 && Math.random() < treeChance) {
-            this.trees[idx] = 1; // oak
+            this.trees[idx] = tile === TileType.FOREST && m < 0.78 && Math.random() < 0.28 ? 4 : 1;
+            this.treeCount++;
+          } else if (tile === TileType.SOIL && m < 0.46 && Math.random() < 0.06) {
+            this.trees[idx] = 5; // sparse dead trees in dry ground
             this.treeCount++;
           }
         } else if (e < 0.74) {
           tile = TileType.HILL;
           if (m > 0.5 && Math.random() < 0.18) {
             this.trees[idx] = 2; // pine
+            this.treeCount++;
+          } else if (m < 0.48 && Math.random() < 0.05) {
+            this.trees[idx] = 5;
             this.treeCount++;
           }
         } else if (e < 0.83) {
