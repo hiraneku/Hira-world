@@ -2,7 +2,7 @@ import { SPRITES } from './Sprites';
 import { TileType } from './types';
 import { World } from './World';
 
-const SUB = 6; // 6x6 hard pixels per tile keep textures legible on mobile
+const SUB = 4; // 4x4 sub-pixels per tile for high-detail pixel art
 
 function hash2D(x: number, y: number): number {
   let value = (Math.imul(x, 374761393) + Math.imul(y, 668265263)) | 0;
@@ -174,22 +174,14 @@ export class Renderer {
                 valueNoise(gx / 9, gy / 9) * 0.48 +
                 valueNoise(gx / 3.5, gy / 3.5) * 0.32 +
                 valueNoise(gx / 1.7, gy / 1.7) * 0.2;
-              if (ground > 0.78) {
-                r += 13;
-                g += 23;
-                b += 8;
-              } else if (ground > 0.63) {
-                r += 6;
-                g += 10;
-                b += 3;
-              } else if (ground < 0.22) {
-                r -= 13;
-                g -= 21;
-                b -= 9;
-              } else if (ground < 0.38) {
-                r -= 7;
-                g -= 12;
-                b -= 5;
+              if (ground > 0.64) {
+                r += 8;
+                g += 15;
+                b += 5;
+              } else if (ground < 0.34) {
+                r -= 8;
+                g -= 13;
+                b -= 6;
               }
               const fleck = hash2D(gx + 83, gy + 191);
               if (fleck > 0.94) {
@@ -367,7 +359,7 @@ export class Renderer {
     ctx.save();
     ctx.translate(offsetX, offsetY);
 
-    // 1. Draw high-detail hand-quantized 6x6 terrain pixels
+    // 1. Draw high-detail 4x4 subpixel terrain
     ctx.drawImage(
       this.terrainCanvas,
       0,
@@ -562,8 +554,9 @@ export class Renderer {
     // Keep canopies distinct at map scale; slight per-tree size differences and
     // two oak silhouettes prevent the forest from reading as a repeated stamp.
     const sizeVariation = [0.92, 1.04, 0.98, 1.08][treeVariant];
-    const drawW = sprite.width * (s / 10) * sizeVariation;
-    const drawH = sprite.height * (s / 8) * sizeVariation;
+    const pixelScale = (s / 10) * sizeVariation;
+    const drawW = sprite.width * pixelScale;
+    const drawH = sprite.height * pixelScale;
 
     // A compact shadow under the trunk grounds the tree without a soft blur.
     ctx.fillStyle = 'rgba(15, 32, 20, 0.42)';
