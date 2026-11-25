@@ -33,31 +33,30 @@ export type ToolId =
 export interface ToolDef {
   id: ToolId;
   name: string;
-  icon: string;
   category: ToolCategory;
   isInstant?: boolean; // e.g., bomb, meteor
 }
 
 export const TOOLS: ToolDef[] = [
   // Terrain
-  { id: 'deep_water', name: 'Deep Sea', icon: '🌊', category: 'terrain' },
-  { id: 'shallow_water', name: 'Shallow', icon: '💧', category: 'terrain' },
-  { id: 'sand', name: 'Sand', icon: '🏖️', category: 'terrain' },
-  { id: 'soil', name: 'Soil', icon: '🟫', category: 'terrain' },
-  { id: 'grass', name: 'Grass', icon: '🟩', category: 'terrain' },
-  { id: 'hill', name: 'Hills', icon: '⛰️', category: 'terrain' },
-  { id: 'mountain', name: 'Mountain', icon: '🗻', category: 'terrain' },
-  { id: 'snow', name: 'Snow', icon: '❄️', category: 'terrain' },
+  { id: 'deep_water', name: 'Deep Sea', category: 'terrain' },
+  { id: 'shallow_water', name: 'Shallow', category: 'terrain' },
+  { id: 'sand', name: 'Sand', category: 'terrain' },
+  { id: 'soil', name: 'Soil', category: 'terrain' },
+  { id: 'grass', name: 'Grass', category: 'terrain' },
+  { id: 'hill', name: 'Hills', category: 'terrain' },
+  { id: 'mountain', name: 'Mountain', category: 'terrain' },
+  { id: 'snow', name: 'Snow', category: 'terrain' },
 
   // Nature
-  { id: 'forest_trees', name: 'Trees', icon: '🌲', category: 'nature' },
-  { id: 'rain', name: 'Rain', icon: '🌧️', category: 'nature' },
+  { id: 'forest_trees', name: 'Trees', category: 'nature' },
+  { id: 'rain', name: 'Rain', category: 'nature' },
 
   // Disasters
-  { id: 'fire', name: 'Fire', icon: '🔥', category: 'disasters' },
-  { id: 'lava', name: 'Lava', icon: '🌋', category: 'disasters' },
-  { id: 'bomb', name: 'Bomb', icon: '💣', category: 'disasters', isInstant: true },
-  { id: 'meteor', name: 'Meteor', icon: '☄️', category: 'disasters', isInstant: true },
+  { id: 'fire', name: 'Fire', category: 'disasters' },
+  { id: 'lava', name: 'Lava', category: 'disasters' },
+  { id: 'bomb', name: 'Bomb', category: 'disasters', isInstant: true },
+  { id: 'meteor', name: 'Meteor', category: 'disasters', isInstant: true },
 ];
 
 export interface Particle {

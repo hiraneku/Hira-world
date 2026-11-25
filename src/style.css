@@ -76,6 +76,20 @@ body,
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
+.brand-icon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  color: #d9f99d;
+  background: #244c32;
+  border: 2px solid #5f9850;
+  font-family: ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: -1px;
+  image-rendering: pixelated;
+}
+
 .stat-pill {
   background: var(--bg-panel);
   border: 2px solid var(--border-panel);
@@ -239,8 +253,11 @@ body,
 }
 
 .tool-icon {
-  font-size: 20px;
-  line-height: 1.1;
+  display: block;
+  width: 28px;
+  height: 28px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }
 
 .tool-name {

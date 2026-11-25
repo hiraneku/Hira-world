@@ -1,6 +1,7 @@
 import './style.css';
 import { Camera, Renderer } from './world/Renderer';
 import { TOOLS, ToolCategory, ToolId } from './world/types';
+import { TOOL_ICONS } from './world/Sprites';
 import { SEASONS, World } from './world/World';
 
 const canvas = document.getElementById('world-canvas') as HTMLCanvasElement;
@@ -182,7 +183,22 @@ function renderDockTools(): void {
   for (const tool of filtered) {
     const btn = document.createElement('button');
     btn.className = `tool-btn${tool.id === activeTool ? ' active' : ''}`;
-    btn.innerHTML = `<span class="tool-icon">${tool.icon}</span><span class="tool-name">${tool.name}</span>`;
+    btn.type = 'button';
+    btn.title = tool.name;
+    btn.setAttribute('aria-label', tool.name);
+
+    const iconSprite = TOOL_ICONS[tool.id];
+    const icon = document.createElement('canvas');
+    icon.className = 'tool-icon';
+    icon.width = iconSprite.width;
+    icon.height = iconSprite.height;
+    icon.setAttribute('aria-hidden', 'true');
+    icon.getContext('2d')!.drawImage(iconSprite, 0, 0);
+
+    const name = document.createElement('span');
+    name.className = 'tool-name';
+    name.textContent = tool.name;
+    btn.append(icon, name);
     btn.addEventListener('click', () => {
       activeTool = tool.id;
       renderDockTools();
