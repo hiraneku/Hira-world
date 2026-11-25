@@ -102,11 +102,59 @@ export class World {
       }
     }
 
+    // Re-space generated trees with a small Poisson-style pass. Moisture still
+    // makes forest pockets, but crowns no longer stack on nearly every tile.
+    const candidates: { index: number; x: number; y: number; type: number; priority: number }[] = [];
+    for (let y = 0; y < this.height; y++) {
+      for (let x = 0; x < this.width; x++) {
+        const index = y * this.width + x;
+        const type = this.trees[index];
+        if (type !== 0) candidates.push({ index, x, y, type, priority: Math.random() });
+      }
+    }
+    candidates.sort((a, b) => b.priority - a.priority);
+    this.trees.fill(0);
+    this.treeCount = 0;
+
+    for (const candidate of candidates) {
+      const spacing = candidate.type === 2 ? 1.8 : candidate.type === 3 ? 1.55 : 1.65;
+      const radius = Math.ceil(spacing);
+      let crowded = false;
+      for (let dy = -radius; dy <= radius && !crowded; dy++) {
+        for (let dx = -radius; dx <= radius; dx++) {
+          if (dx * dx + dy * dy >= spacing * spacing) continue;
+          const x = candidate.x + dx;
+          const y = candidate.y + dy;
+          if (this.inBounds(x, y) && this.trees[y * this.width + x] !== 0) {
+            crowded = true;
+            break;
+          }
+        }
+      }
+      if (!crowded) {
+        this.trees[candidate.index] = candidate.type;
+        this.treeCount++;
+      }
+    }
+
     this.terrainDirty = true;
   }
 
   public inBounds(x: number, y: number): boolean {
     return x >= 0 && y >= 0 && x < this.width && y < this.height;
+  }
+
+  private hasNearbyTree(x: number, y: number, radius: number): boolean {
+    const r2 = radius * radius;
+    for (let oy = -Math.ceil(radius); oy <= Math.ceil(radius); oy++) {
+      for (let ox = -Math.ceil(radius); ox <= Math.ceil(radius); ox++) {
+        if (ox * ox + oy * oy >= r2) continue;
+        const tx = x + ox;
+        const ty = y + oy;
+        if (this.inBounds(tx, ty) && this.trees[ty * this.width + tx] !== 0) return true;
+      }
+    }
+    return false;
   }
 
   public applyTool(tool: ToolId, cx: number, cy: number, radius: number): void {
@@ -221,6 +269,7 @@ export class World {
                 current === TileType.SAND ||
                 current === TileType.HILL) &&
               this.trees[idx] === 0 &&
+              !this.hasNearbyTree(x, y, current === TileType.HILL ? 1.8 : 1.65) &&
               Math.random() < 0.45
             ) {
               if (current === TileType.SAND) this.trees[idx] = 3;

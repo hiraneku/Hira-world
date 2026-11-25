@@ -171,16 +171,27 @@ export class Renderer {
             // resets at tile boundaries, so color patches read as a continuous map.
             if (tile === TileType.GRASS || tile === TileType.FOREST) {
               const ground =
-                valueNoise(gx / 9, gy / 9) * 0.68 +
-                valueNoise(gx / 3.5, gy / 3.5) * 0.32;
+                valueNoise(gx / 9, gy / 9) * 0.48 +
+                valueNoise(gx / 3.5, gy / 3.5) * 0.32 +
+                valueNoise(gx / 1.7, gy / 1.7) * 0.2;
               if (ground > 0.64) {
                 r += 8;
-                g += 14;
+                g += 15;
                 b += 5;
               } else if (ground < 0.34) {
                 r -= 8;
                 g -= 13;
                 b -= 6;
+              }
+              const fleck = hash2D(gx + 83, gy + 191);
+              if (fleck > 0.94) {
+                r += 6;
+                g += 10;
+                b += 3;
+              } else if (fleck < 0.05) {
+                r -= 5;
+                g -= 8;
+                b -= 4;
               }
               if (hash === 1) {
                 r += 5;
@@ -192,7 +203,9 @@ export class Renderer {
                 b -= 5;
               }
             } else if (tile === TileType.SAND) {
-              const dune = valueNoise(gx / 8, gy / 8);
+              const dune =
+                valueNoise(gx / 8, gy / 8) * 0.65 +
+                valueNoise(gx / 2.8, gy / 2.8) * 0.35;
               if (dune > 0.62) {
                 r += 9;
                 g += 8;
@@ -203,7 +216,9 @@ export class Renderer {
                 b -= 6;
               }
             } else if (tile === TileType.SOIL) {
-              const earth = valueNoise(gx / 6, gy / 6);
+              const earth =
+                valueNoise(gx / 6, gy / 6) * 0.62 +
+                valueNoise(gx / 2.3, gy / 2.3) * 0.38;
               if (earth > 0.66) {
                 r += 12;
                 g += 8;
@@ -214,7 +229,9 @@ export class Renderer {
                 b -= 7;
               }
             } else if (tile === TileType.DEEP_WATER || tile === TileType.SHALLOW_WATER) {
-              const ripple = valueNoise(gx / 7, gy / 7);
+              const ripple =
+                valueNoise(gx / 7, gy / 7) * 0.7 +
+                valueNoise(gx / 2.5, gy / 2.5) * 0.3;
               if (ripple > 0.67) {
                 r += 9;
                 g += 13;
@@ -234,6 +251,16 @@ export class Renderer {
                 r += 10;
                 g += 10;
                 b += 12;
+              }
+            } else if (tile === TileType.SNOW) {
+              if (hash < 2) {
+                r += 8;
+                g += 9;
+                b += 10;
+              } else if (hash === 5) {
+                r -= 9;
+                g -= 8;
+                b -= 6;
               }
             } else if (tile === TileType.ASH && hash === 4) {
               r = 180;
@@ -500,7 +527,7 @@ export class Renderer {
     // Keep canopies distinct at map scale; slight per-tree size differences and
     // two oak silhouettes prevent the forest from reading as a repeated stamp.
     const sizeVariation = [0.92, 1.04, 0.98, 1.08][treeVariant];
-    const pixelScale = (s / 8) * sizeVariation;
+    const pixelScale = (s / 10) * sizeVariation;
     const drawW = sprite.width * pixelScale;
     const drawH = sprite.height * pixelScale;
 
