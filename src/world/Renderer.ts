@@ -54,16 +54,16 @@ const TILE_BASE: Record<TileType, [number, number, number][]> = {
     [118, 82, 50],
   ],
   [TileType.GRASS]: [
-    [78, 166, 68],
-    [72, 156, 62],
-    [88, 176, 76],
-    [66, 148, 58],
+    [70, 151, 59],
+    [66, 141, 55],
+    [80, 164, 65],
+    [59, 132, 49],
   ],
   [TileType.FOREST]: [
-    [56, 128, 50],
-    [50, 120, 46],
-    [62, 136, 56],
-    [46, 112, 42],
+    [45, 108, 44],
+    [40, 98, 40],
+    [53, 117, 48],
+    [36, 91, 36],
   ],
   [TileType.HILL]: [
     [116, 122, 130],
@@ -242,15 +242,22 @@ export class Renderer {
                 b -= 3;
               }
             } else if (tile === TileType.HILL || tile === TileType.MOUNTAIN) {
-              const crack = ((x * 3 + sx) ^ (y * 5 + sy)) & 7;
-              if (crack === 0) {
-                r -= 16;
-                g -= 16;
-                b -= 14;
-              } else if (hash < 2) {
-                r += 10;
-                g += 10;
-                b += 12;
+              const stone =
+                valueNoise(gx / 7, gy / 7) * 0.62 +
+                valueNoise(gx / 2.1, gy / 2.1) * 0.38;
+              if (stone > 0.69) {
+                r += 11;
+                g += 11;
+                b += 13;
+              } else if (stone < 0.31) {
+                r -= 12;
+                g -= 12;
+                b -= 10;
+              }
+              if (hash === 2) {
+                r += 6;
+                g += 6;
+                b += 7;
               }
             } else if (tile === TileType.SNOW) {
               if (hash < 2) {
@@ -441,6 +448,10 @@ export class Renderer {
             ctx.drawImage(SPRITES.grassTuft, px + tileSize * 0.12, py + tileSize * 0.15, tileSize * 0.76, tileSize * 0.76);
           } else if (dHash === 53) {
             ctx.drawImage(SPRITES.flower, px + tileSize * 0.1, py + tileSize * 0.12, tileSize * 0.8, tileSize * 0.8);
+          } else if (dHash === 7) {
+            ctx.drawImage(SPRITES.grassTuft, px + tileSize * 0.06, py + tileSize * 0.08, tileSize * 0.88, tileSize * 0.88);
+          } else if (dHash === 47) {
+            ctx.drawImage(SPRITES.flower, px + tileSize * 0.02, py + tileSize * 0.08, tileSize * 0.96, tileSize * 0.9);
           }
         }
 

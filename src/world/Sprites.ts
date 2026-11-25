@@ -72,35 +72,40 @@ function createOak(variant: number): HTMLCanvasElement {
 
   // Broad, uneven canopy made from overlapping leaf masses and lit facets.
   leafBlob(ctx, 12, 8, 10, 7, C.leafShadow, variant);
-  leafBlob(ctx, 7 + offset, 7, 5.4, 4.6, C.leafMid, variant + 2);
-  leafBlob(ctx, 14, 6.5 + offset, 5.8, 4.8, C.leaf, variant + 3);
-  leafBlob(ctx, 18 - offset, 8.7, 4.5, 4.2, C.leafMid, variant + 1);
-  leafBlob(ctx, 11, 10, 7.2, 3.6, C.leaf, variant + 4);
+  leafBlob(ctx, 6.5 + offset, 7, 5.2, 4.5, C.leafMid, variant + 2);
+  leafBlob(ctx, 13.5, 6.2 + offset, 5.7, 4.8, C.leaf, variant + 3);
+  leafBlob(ctx, 18 - offset, 8.7, 4.4, 4.1, C.leafMid, variant + 1);
+  leafBlob(ctx, 11, 10.6, 7.3, 3.2, C.leafShadow, variant + 5);
+  leafBlob(ctx, 11, 9.4, 6.8, 3.4, C.leaf, variant + 4);
 
-  // Chunked highlights sit on the upper-left sides of the canopy clusters.
-  leafBlob(ctx, 6, 5.5 + offset, 2.3, 1.7, C.leafLight, 1 + variant);
-  leafBlob(ctx, 12, 4.6, 2.8, 1.8, C.leafSun, 2 + variant);
-  leafBlob(ctx, 17, 7 + offset, 2.3, 1.7, C.leafLight, 3 + variant);
-  leafBlob(ctx, 10, 8, 2.2, 1.4, C.leafLight, 4 + variant);
-  pixel(ctx, 5 + offset, 8, C.leafSun);
-  pixel(ctx, 15 - offset, 10, C.leafLight);
-  pixel(ctx, 19, 9, C.leafSun);
+  // Broken highlights and shadow flecks suggest many small leaves, not one flat blob.
+  leafBlob(ctx, 5.5, 5.4 + offset, 2.5, 1.7, C.leafLight, 1 + variant);
+  leafBlob(ctx, 11.5, 4.6, 2.6, 1.7, C.leafSun, 2 + variant);
+  leafBlob(ctx, 17, 6.8 + offset, 2.2, 1.6, C.leafLight, 3 + variant);
+  leafBlob(ctx, 9.3, 8.1, 2.1, 1.4, C.leafLight, 4 + variant);
+  for (const [x, y, color] of [
+    [4, 7, C.leafSun], [7, 4, C.leafLight], [9, 6, C.leafSun],
+    [14, 4, C.leafLight], [18, 8, C.leafSun], [6, 10, C.leaf],
+    [16, 10, C.leafShadow], [20, 9, C.leafLight], [12, 2, C.leafLight],
+  ] as [number, number, string][]) {
+    pixel(ctx, x + (variant && x < 12 ? 1 : 0), y, color);
+  }
 
-  // Trunk, short branches and roots are drawn over the canopy for clear depth.
+  // Slender, forked trunk: most bark stays hidden under the leaf canopy.
   ctx.fillStyle = C.barkShadow;
-  ctx.fillRect(10, 11, 4, 12);
+  ctx.fillRect(10, 13, 4, 10);
   ctx.fillStyle = C.bark;
-  ctx.fillRect(11, 11, 2, 12);
+  ctx.fillRect(11, 13, 2, 10);
   ctx.fillStyle = C.barkLight;
-  ctx.fillRect(11, 13, 1, 7);
-  pixel(ctx, 12, 15, C.barkLight);
+  ctx.fillRect(11, 15, 1, 6);
+  pixel(ctx, 12, 17, C.barkLight);
   ctx.fillStyle = C.barkShadow;
-  ctx.fillRect(7, 10, 4, 2);
-  ctx.fillRect(13, 10, 4, 2);
-  pixel(ctx, 8, 9, C.bark);
-  pixel(ctx, 15, 9, C.bark);
-  ctx.fillRect(8, 22, 4, 1);
-  ctx.fillRect(12, 22, 4, 1);
+  ctx.fillRect(8, 11, 4, 2);
+  ctx.fillRect(12, 11, 4, 2);
+  pixel(ctx, 9, 10, C.bark);
+  pixel(ctx, 14, 10, C.bark);
+  ctx.fillRect(9, 22, 3, 1);
+  ctx.fillRect(12, 22, 3, 1);
 
   return canvas;
 }
